@@ -31,12 +31,16 @@ int main(){
 	// 	if(contador%4==0) printf("\n");
 	// }
 
-	/* Loop referente ao testa da função LH para text.bin */
-	while(address <= 0x44){
-		r = lh(address,0);
-		address += 2;
-		printf("%x\t",r);
-	}
+	/* Loop referente ao teste da função LH para text.bin */
+	// while(address <= 0x44){
+	// 	r = lh(address,0);
+	// 	address += 2;
+	// 	printf("%x\t",r);
+	// 	contador++;
+	// 	if(contador%8==0) printf("\n");
+	// }
+
+	/* Loop referente ao teste da função LB para text.bin*/
 
 	return 0;
 }

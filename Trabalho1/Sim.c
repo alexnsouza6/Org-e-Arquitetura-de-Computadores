@@ -29,7 +29,6 @@ int32_t lh(uint32_t address, int16_t kte){
 	int32_t res	= (address + kte)%4;
 	int32_t word_aux = mem[pos], word = mem[pos];
 
-	//MANTER O SINAL
 
 	if(res==0){	
 		word_aux = word_aux & 0x0000ffff;
@@ -37,10 +36,14 @@ int32_t lh(uint32_t address, int16_t kte){
 		word_aux = word_aux >> 15;
 		if(word_aux == 1) word = word | 0xffff0000;
 	}
-	
-	else	word_aux = word_aux << 16;
 
-	return word_aux;
+	else{
+		word_aux = word_aux >> 16;
+		word = word >> 16;
+		word_aux = word_aux >> 15;
+		if(word_aux == 1) word = word | 0xffff0000;
+	}
+	return word;
 
 }
 
