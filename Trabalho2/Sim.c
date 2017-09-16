@@ -149,7 +149,143 @@ void sb(uint32_t address, int16_t kte, int8_t dado){
 			printf("Different from expected - Error loading byte");
 	}
 
-}	
+}
+
+void advance_pc(int offset){
+	pc = npc;
+	npc += offset;
+}
+
+
+void fetch(){
+	int32_t pos;
+	int32_t word = 0x0;
+
+	/* Pc position is converted to a position in mem Array */
+	pos = pc/4;  
+	word = mem[pos];
+	advance_pc(4);
+
+	/*Then, the instruction is saved in Register Instruction */
+	ri = word;
+
+}
+
+
+void decode(){
+	int32_t opmask = 0xfc000000;
+	int32_t rsmask = 0x03e00000;
+	int32_t rtmask = 0x001f0000;
+	int32_t rdmask = 0x0000f800;
+	int32_t shamtmask = 0x000007c0;
+	int32_t functmask = 0x0000003f;
+	int16_t immediatemask = 0x0000ffff;
+
+
+	opcode = (int8_t)(ri & opmask); 
+
+	switch(opcode){
+		
+		default:
+			printf("Opcode can't be find");
+
+		/*Type R*/
+		case 0x0:
+			rs = (int8_t) (ri & rsmask);
+			rt = (int8_t) (ri & rtmask);
+			rd = (int8_t) (ri & rdmask);
+			shamt = (int8_t)(ri & shamtmask);
+			funct = (int8_t)(ri & functmask);
+		break;
+
+		/* Type I */
+		case 0x08 ... 0x0F:
+			rs = (int8_t)(ri & rsmask);
+			rt = (int8_t)(ri & rtmask);
+			k16 = (int16_t)(ri & immediatemask);
+		break;
+
+		case 0x20 ... 0x2B:
+			rs = (int8_t)(ri & rsmask);
+			rt = (int8_t)(ri & rtmask);
+			k16 = (int16_t)(ri & immediatemask);
+		break;
+
+
+		/* Type J */
+		case 0x02 ... 0x07:
+			k26 = ri & 0x03ffffff;
+		break;
+
+	}
+}
+
+void execute(){
+
+	switch(opcode){
+		case EXT:
+		/* Look FUNCT */
+		break;
+
+		case LW:
+			breg[rs] = mem[rt + k16];
+			advance_pc(4);
+		break;
+
+		case LB:
+			breg[rs] = mem[rt + k16];
+			advance_pc(4);
+		break;
+
+		case LH:
+			breg[rs] = mem[rt + k16];
+			advance_pc(4);
+		break;
+
+		case LHU:
+			breg[rs] = mem[rt + k16];
+			advance_pc(4);
+		break;
+
+		case LUI:
+			breg[rs] = k16 << 16;
+			advance_pc(4);
+		break;
+
+		case SW:
+			mem[rt + k16] = breg[rs];
+			advance_pc(4);
+		break;
+
+		case SB:
+			mem[rt + k16] = breg[rs];
+			advance_pc(4);
+		break;
+
+		case SH:
+			mem[rt + k16] = breg[rs];
+			advance_pc(4);
+		break;
+
+		case BEQ:
+			breg[rs] = k16 << 16;
+			advance_pc(4);
+		break;
+
+
+
+
+
+
+
+
+
+
+
+
+	}	
+}
+
 
 void load_mem(char* arquivo, int32_t address){
 	/* Ler todas as palavras dos arquivos .bin*/
