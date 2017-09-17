@@ -31,10 +31,10 @@ typedef enum{
 	SW = 0x2B, // I
 	SB = 0x28, // I
 	SH = 0x29, // I
-	BEQ = 0x04, // J
-	BNE = 0x05,	// J
-	BLEZ = 0x06, // J
-	BGTZ = 0x07, // J
+	BEQ = 0x04, // I
+	BNE = 0x05,	// I
+	BLEZ = 0x06, // I
+	BGTZ = 0x07, // I
 	ADDI = 0x08, // I
 	SLTI = 0x0A, // I
 	SLTIU = 0x0B, // I

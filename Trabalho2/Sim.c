@@ -199,7 +199,7 @@ void decode(){
 		break;
 
 		/* Type I */
-		case 0x08 ... 0x0F:
+		case 0x04 ... 0x0F:
 			rs = (int8_t)(ri & rsmask);
 			rt = (int8_t)(ri & rtmask);
 			k16 = (int16_t)(ri & immediatemask);
@@ -213,7 +213,7 @@ void decode(){
 
 
 		/* Type J */
-		case 0x02 ... 0x07:
+		case 0x02 ... 0x03:
 			k26 = ri & 0x03ffffff;
 		break;
 
@@ -228,54 +228,119 @@ void execute(){
 		break;
 
 		case LW:
-			breg[rs] = mem[rt + k16];
+			breg[rt] = mem[rs + k16];
 			advance_pc(4);
 		break;
 
 		case LB:
-			breg[rs] = mem[rt + k16];
+			breg[rt] = mem[rs + k16];
 			advance_pc(4);
 		break;
 
 		case LH:
-			breg[rs] = mem[rt + k16];
+			breg[rt] = mem[rs + k16];
 			advance_pc(4);
 		break;
 
 		case LHU:
-			breg[rs] = mem[rt + k16];
+			breg[rt] = mem[rs + k16];
 			advance_pc(4);
 		break;
 
 		case LUI:
-			breg[rs] = k16 << 16;
+			breg[rt] = k16 << 16;
 			advance_pc(4);
 		break;
 
 		case SW:
-			mem[rt + k16] = breg[rs];
+			mem[rs + k16] = breg[rt];
 			advance_pc(4);
 		break;
 
 		case SB:
-			mem[rt + k16] = breg[rs];
+			mem[rs + k16] = breg[rt];
 			advance_pc(4);
 		break;
 
 		case SH:
-			mem[rt + k16] = breg[rs];
+			mem[rs + k16] = breg[rt];
 			advance_pc(4);
 		break;
 
 		case BEQ:
-			breg[rs] = k16 << 16;
+			if (breg[rs] == breg[rt])
+				advance_pc(k26<<2);
+			else
+				advance_pc(4);
+		break;
+
+		case BNE:
+			if (breg[rs] != breg[rt])
+				advance_pc(k26<<2);
+			else
+				advance_pc(4);
+		break;
+
+		case BLEZ:
+			if (breg[rs] <= 0)
+				advance_pc(k26<<2);
+			else
+				advance_pc(4);
+		break;
+
+		case BGTZ:
+			if(breg[rs]>0)
+				advance_pc(k26<<2);
+			else
+				advance_pc(4);
+		break;
+
+		case ADDI:
+			breg[rt] = breg[rs] + k16;
 			advance_pc(4);
 		break;
 
+		case SLTI:
+			if(breg[rs] < k16)
+				breg[rt] = 1;
+			else
+				breg[rt] = 0;
+			advance_pc(4);
+		break;
 
+		case SLTIU:
+			if(breg[rs] < k16)
+				breg[rt] = 1;
+			else
+				breg[rt] = 0;
+			advance_pc(4);
+		break;
 
+		case ANDI:
+			breg[rt] = breg[rs] & k16;
+			advance_pc(4);
+		break;
 
+		case ORI:
+			breg[rt] = breg[rs] | k16;
+			advance_pc(4);
+		break;
 
+		case XORI:
+			breg[rt] = breg[rs] ^ k16;
+			advance_pc(4);
+		break;
+
+		case J:
+			pc = npc;
+			npc = (pc & 0xf0000000) | (k26 <<2);
+		break;
+
+		case JAL:
+			breg[31] = pc + 8;
+			pc = npc;
+			npc = (pc & 0xf0000000) | (k26 <<2);
+		break;
 
 
 
