@@ -341,14 +341,50 @@ void execute(){
 			pc = npc;
 			npc = (pc & 0xf0000000) | (k26 <<2);
 		break;
-
-
-
-
-
-
-
 	}	
+}
+
+void step(){
+	fetch();
+	decode();
+	execute();
+}
+
+void run(){
+
+}
+
+void dump_mem(int start, int end, char format){
+	int i;
+	if(format == 'h'){
+		printf("\n");
+		for(i=start;i<end;i++)
+			printf("mem[%d] = 0x%x\n", i, mem[i]);
+	}
+	else{
+		printf("\n");
+		for(i=start;i<end;i++)
+			printf("mem[%d] = %d\n", i, mem[i]);
+	}
+}
+
+void dump_reg(char format){
+	int i;
+
+	if(format == 'h'){
+		for(i=0;i<32;i++)
+			printf("Registrador %d: %x",i,breg[i]);
+		printf("PC Register: %x", pc);
+		printf("Hi Register: %x", hi);
+		printf("Lo Register: %x", lo);
+	}
+	else{
+		for(i=0;i<32;i++)
+			printf("Registrador %d: %d",i,breg[i]);
+	printf("PC Register: %x", pc);
+	printf("Hi Register: %x", hi);
+	printf("Lo Register: %x", lo);
+	}
 }
 
 

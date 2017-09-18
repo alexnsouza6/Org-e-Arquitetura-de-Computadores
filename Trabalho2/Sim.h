@@ -10,10 +10,11 @@ void sb(uint32_t address, int16_t kte, int8_t dado);
 void advance_pc(int offset);
 void fetch();
 void decode();
+void execute();
 
-int breg[32]; //Banco de registradores
+int breg[32]; //Register's Base
 int32_t mem[MEM_SIZE];
-uint32_t pc; //Program Counter Register
+uint32_t pc, hi, lo; //Program Counter Register
 uint32_t npc;
 uint32_t ri; //Register which yields the instruction to be executed
 int8_t opcode, rs, rt, rd, shamt, funct;  
