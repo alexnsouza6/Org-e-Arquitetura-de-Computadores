@@ -395,19 +395,19 @@ void analyze_funct(){
 		break;
 
 		case SLL:
-			breg[rd] = breg[rt] << shamnt;
+			breg[rd] = breg[rt] << shamt;
 		break;
 
 		case SRL:
-			breg[rd] = breg[rt] >> shamnt;
+			breg[rd] = breg[rt] >> shamt;
 		break;
 
 		case SRA:
-			breg[rd] = breg[rt] >> shamnt;
+			breg[rd] = breg[rt] >> shamt;
 		break;
 
 		case SYSCALL:
-			/* Search for syscalls systems */
+			analyze_syscall();
 		break;
 
 		case MFHI:
@@ -420,6 +420,20 @@ void analyze_funct(){
 	}
 }
 
+void analyze_syscall(){
+	char *c;
+	/* Prints integer */
+	if(breg[2] == 1)
+		printf("%d", breg[4]);
+	
+	/* Ends program */
+	else if(breg[2] == 10)
+		exit(0);
+
+	/* Prints string */
+	else if(breg[2] == 4)
+		sprintf(c,"%d",breg[2]);
+}
 
 
 void step(){
@@ -429,7 +443,11 @@ void step(){
 }
 
 void run(){
-
+	while(pc<4096){
+		fetch();
+		decode();
+		execute();
+	}
 }
 
 void dump_mem(int start, int end, char format){
@@ -459,9 +477,9 @@ void dump_reg(char format){
 	else{
 		for(i=0;i<32;i++)
 			printf("Registrador %d: %d",i,breg[i]);
-		printf("PC Register: %x", pc);
-		printf("Hi Register: %x", hi);
-		printf("Lo Register: %x", lo);
+		printf("PC Register: %d", pc);
+		printf("Hi Register: %d", hi);
+		printf("Lo Register: %d", lo);
 	}
 }
 
