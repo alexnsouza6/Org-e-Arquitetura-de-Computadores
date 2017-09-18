@@ -11,6 +11,12 @@ void advance_pc(int offset);
 void fetch();
 void decode();
 void execute();
+void step();
+void run();
+void analyze_funct();
+void dump_reg(char format);
+void dump_mem(int start, int end, char format);
+
 
 int breg[32]; //Register's Base
 int32_t mem[MEM_SIZE];

@@ -224,7 +224,8 @@ void execute(){
 
 	switch(opcode){
 		case EXT:
-		/* Look FUNCT */
+			analyze_funct();
+			advance_pc(4);
 		break;
 
 		case LW:
@@ -344,6 +345,83 @@ void execute(){
 	}	
 }
 
+void analyze_funct(){
+	switch(funct){
+		default:
+			printf("Funct Opcode Not Found\n");
+		break;
+
+		case ADD:
+			breg[rd] = breg[rs] + breg[rt];
+		break;
+
+		case SUB:
+			breg[rd] = breg[rs] - breg[rt];
+		break;
+
+		case MULT:
+			lo = breg[rs] * breg[rt];
+		break;
+
+		case DIV:
+			lo = breg[rs] / breg[rt];
+			hi = breg[rs] % breg[rt];
+		break;
+
+		case AND:
+			breg[rd] = breg[rs] & breg[rt];
+		break;
+
+		case OR:
+			breg[rd] = breg[rs] | breg[rt];
+		break;
+
+		case XOR:
+			breg[rd] = breg[rs] ^ breg[rt];
+		break;
+
+		case NOR:
+			breg[rd] = ~(breg[rs] | breg[rt]);
+		break;
+
+		case SLT:
+			if(breg[rs] < breg[rt]) breg[rd] = 1;
+			else breg[rd] = 0;
+		break;
+
+		case JR:
+			pc = npc;
+			npc = breg[rs];
+		break;
+
+		case SLL:
+			breg[rd] = breg[rt] << shamnt;
+		break;
+
+		case SRL:
+			breg[rd] = breg[rt] >> shamnt;
+		break;
+
+		case SRA:
+			breg[rd] = breg[rt] >> shamnt;
+		break;
+
+		case SYSCALL:
+			/* Search for syscalls systems */
+		break;
+
+		case MFHI:
+			breg[rd] = hi;
+		break;
+
+		case MFLO:
+			breg[rd] = lo;
+		break;
+	}
+}
+
+
+
 void step(){
 	fetch();
 	decode();
@@ -381,9 +459,9 @@ void dump_reg(char format){
 	else{
 		for(i=0;i<32;i++)
 			printf("Registrador %d: %d",i,breg[i]);
-	printf("PC Register: %x", pc);
-	printf("Hi Register: %x", hi);
-	printf("Lo Register: %x", lo);
+		printf("PC Register: %x", pc);
+		printf("Hi Register: %x", hi);
+		printf("Lo Register: %x", lo);
 	}
 }
 
