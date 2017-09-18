@@ -151,24 +151,10 @@ void sb(uint32_t address, int16_t kte, int8_t dado){
 
 }
 
-void advance_pc(int offset){
-	pc = npc;
-	npc += offset;
-}
-
 
 void fetch(){
-	int32_t pos;
-	int32_t word = 0x0;
-
-	/* Pc position is converted to a position in mem Array */
-	pos = pc/4;  
-	word = mem[pos];
-	advance_pc(4);
-
-	/*Then, the instruction is saved in Register Instruction */
-	ri = word;
-
+	ri = mem[pc/4];
+	pc = pc + 4;
 }
 
 
@@ -179,10 +165,10 @@ void decode(){
 	int32_t rdmask = 0x0000f800;
 	int32_t shamtmask = 0x000007c0;
 	int32_t functmask = 0x0000003f;
-	int16_t immediatemask = 0x0000ffff;
+	int32_t immediatemask = 0x0000ffff;
 
-
-	opcode = (int8_t)(ri & opmask); 
+	opcode = (ri & opmask);
+	opcode = opcode >> 26; 
 
 	switch(opcode){
 		
@@ -191,26 +177,33 @@ void decode(){
 
 		/*Type R*/
 		case 0x0:
-			rs = (int8_t) (ri & rsmask);
-			rt = (int8_t) (ri & rtmask);
-			rd = (int8_t) (ri & rdmask);
-			shamt = (int8_t)(ri & shamtmask);
-			funct = (int8_t)(ri & functmask);
+			rs =  (ri & rsmask);
+			rs = rs >> 21;
+			rt =  (ri & rtmask);
+			rt = rt >> 16;
+			rd =  (ri & rdmask);
+			rd = rd >> 11;
+			shamt = (ri & shamtmask);
+			shamt = shamt >> 6;
+			funct = (ri & functmask);
 		break;
 
 		/* Type I */
 		case 0x04 ... 0x0F:
-			rs = (int8_t)(ri & rsmask);
-			rt = (int8_t)(ri & rtmask);
-			k16 = (int16_t)(ri & immediatemask);
+			rs = (ri & rsmask);
+			rs = rs >> 21;
+			rt = (ri & rtmask);
+			rt = rt >> 16;
+			k16 = (ri & immediatemask);
 		break;
 
 		case 0x20 ... 0x2B:
-			rs = (int8_t)(ri & rsmask);
-			rt = (int8_t)(ri & rtmask);
-			k16 = (int16_t)(ri & immediatemask);
+			rs = (ri & rsmask);
+			rs = rs >> 21;
+			rt = (ri & rtmask);
+			rt = rt >> 16;
+			k16 = (ri & immediatemask);
 		break;
-
 
 		/* Type J */
 		case 0x02 ... 0x03:
@@ -225,80 +218,83 @@ void execute(){
 	switch(opcode){
 		case EXT:
 			analyze_funct();
-			advance_pc(4);
+			//advance_pc(4);
 		break;
 
 		case LW:
-			breg[rt] = mem[rs + k16];
-			advance_pc(4);
+			breg[rt] = mem[(breg[rs] + k16)/4];
+			//advance_pc(4);
+		break;
+
+		case LBU:
+			breg[rt] = mem[(breg[rs] + k16)/4];
+			//advance_pc(4);
 		break;
 
 		case LB:
-			breg[rt] = mem[rs + k16];
-			advance_pc(4);
+			breg[rt] = mem[(breg[rs] + k16)/4];
+			//advance_pc(4);
 		break;
 
 		case LH:
-			breg[rt] = mem[rs + k16];
-			advance_pc(4);
+			breg[rt] = mem[(breg[rs] + k16)/4];
+			//advance_pc(4);
 		break;
 
 		case LHU:
-			breg[rt] = mem[rs + k16];
-			advance_pc(4);
+			breg[rt] = mem[(breg[rs] + k16)/4];
+			//advance_pc(4);
 		break;
 
 		case LUI:
-			breg[rt] = k16 << 16;
-			advance_pc(4);
+			breg[rt] = (int32_t) (k16 << 16);
+			//advance_pc(4);
 		break;
 
 		case SW:
-			mem[rs + k16] = breg[rt];
-			advance_pc(4);
+			mem[(breg[rs] + k16)/4] = breg[rt];
+			//advance_pc(4);
 		break;
 
 		case SB:
-			mem[rs + k16] = breg[rt];
-			advance_pc(4);
+			mem[(breg[rs] + k16)/4] = breg[rt];
+			//advance_pc(4);
 		break;
 
 		case SH:
-			mem[rs + k16] = breg[rt];
-			advance_pc(4);
+			mem[(breg[rs] + k16)/4] = breg[rt];
+			//advance_pc(4);
 		break;
 
 		case BEQ:
 			if (breg[rs] == breg[rt])
-				advance_pc(k26<<2);
-			else
-				advance_pc(4);
+				pc += k16 << 2;
 		break;
 
 		case BNE:
 			if (breg[rs] != breg[rt])
-				advance_pc(k26<<2);
+				pc += k16 << 2;
 			else
-				advance_pc(4);
+				//advance_pc(4);
 		break;
 
 		case BLEZ:
 			if (breg[rs] <= 0)
-				advance_pc(k26<<2);
+				pc += k26 << 2;
 			else
-				advance_pc(4);
+				//advance_pc(4);
 		break;
 
 		case BGTZ:
 			if(breg[rs]>0)
-				advance_pc(k26<<2);
+				pc += k26 << 2;
 			else
-				advance_pc(4);
+				//advance_pc(4);
 		break;
 
 		case ADDI:
 			breg[rt] = breg[rs] + k16;
-			advance_pc(4);
+			//advance_pc(4);
 		break;
 
 		case SLTI:
@@ -306,7 +302,7 @@ void execute(){
 				breg[rt] = 1;
 			else
 				breg[rt] = 0;
-			advance_pc(4);
+			//advance_pc(4);
 		break;
 
 		case SLTIU:
@@ -314,33 +310,35 @@ void execute(){
 				breg[rt] = 1;
 			else
 				breg[rt] = 0;
-			advance_pc(4);
+			//advance_pc(4);
 		break;
 
 		case ANDI:
 			breg[rt] = breg[rs] & k16;
-			advance_pc(4);
+			//advance_pc(4);
 		break;
 
 		case ORI:
 			breg[rt] = breg[rs] | k16;
-			advance_pc(4);
+			//advance_pc(4);
 		break;
 
 		case XORI:
 			breg[rt] = breg[rs] ^ k16;
-			advance_pc(4);
+			//advance_pc(4);
+		break;
+
+		case ADDIU:
+			breg[rt] = breg[rs] + k16;
 		break;
 
 		case J:
-			pc = npc;
-			npc = (pc & 0xf0000000) | (k26 <<2);
+			pc = k26 << 2;
 		break;
 
 		case JAL:
-			breg[31] = pc + 8;
-			pc = npc;
-			npc = (pc & 0xf0000000) | (k26 <<2);
+			breg[31] = pc;
+			pc = k26 << 2;
 		break;
 	}	
 }
@@ -390,8 +388,8 @@ void analyze_funct(){
 		break;
 
 		case JR:
-			pc = npc;
-			npc = breg[rs];
+			pc = breg[rs];
+			
 		break;
 
 		case SLL:
@@ -421,7 +419,8 @@ void analyze_funct(){
 }
 
 void analyze_syscall(){
-	char *c;
+	int32_t str;
+    int i=0;                                                      
 	/* Prints integer */
 	if(breg[2] == 1)
 		printf("%d", breg[4]);
@@ -431,8 +430,17 @@ void analyze_syscall(){
 		exit(0);
 
 	/* Prints string */
-	else if(breg[2] == 4)
-		sprintf(c,"%d",breg[2]);
+	else if(breg[2] == 4){
+		//printf("bobao");
+		str = lw(breg[4],0);                                           
+        while(str != 0){                                              
+          str = lb(breg[4],i);                                         
+          i++;                                                        
+          printf("%c", str);                                          
+        }
+	}
+		
+
 }
 
 
@@ -443,10 +451,11 @@ void step(){
 }
 
 void run(){
-	while(pc<4096){
-		fetch();
-		decode();
-		execute();
+	int i = 0;
+	pc = 0;
+	while(pc<0x2000/4 || i<4096) {
+		step();
+		i++;
 	}
 }
 
@@ -457,11 +466,12 @@ void dump_mem(int start, int end, char format){
 		for(i=start;i<end;i++)
 			printf("mem[%d] = 0x%x\n", i, mem[i]);
 	}
-	else{
+	else if(format == 'd'){
 		printf("\n");
 		for(i=start;i<end;i++)
 			printf("mem[%d] = %d\n", i, mem[i]);
 	}
+	else printf("Incorrect Format\n");
 }
 
 void dump_reg(char format){

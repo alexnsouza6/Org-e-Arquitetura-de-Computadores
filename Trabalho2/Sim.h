@@ -1,12 +1,11 @@
 #define MEM_SIZE 4096
 
-int breg[32]; //Register's Base
+int32_t breg[32]; //Register's Base
 int32_t mem[MEM_SIZE];
 uint32_t pc, hi, lo; //Program Counter Register
-uint32_t npc;
 uint32_t ri; //Register which yields the instruction to be executed
-int8_t opcode, rs, rt, rd, shamt, funct;  
-int16_t addconst, k16;
+uint32_t opcode, rs, rt, rd, shamt, funct;  
+int16_t  k16;
 uint32_t k26;
 
 
@@ -46,6 +45,7 @@ typedef enum{
 	BLEZ = 0x06, // I
 	BGTZ = 0x07, // I
 	ADDI = 0x08, // I
+	ADDIU = 0x09, //I
 	SLTI = 0x0A, // I
 	SLTIU = 0x0B, // I
 	ANDI = 0x0C, // I
