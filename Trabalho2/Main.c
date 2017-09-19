@@ -5,14 +5,14 @@
 #define MEM_SIZE 4096
 #define init_text 0x00000000
 #define init_data 0x00002000
-uint32_t pc; //Program Counter Register
+uint32_t pc, hi, lo; //Program Counter Register
 uint32_t ri;
 uint32_t opcode, rs, rt, rd, shamt, funct; 
 int16_t addconst;
 int32_t mem[MEM_SIZE];
 
 int main(){
-	char text[] = "text.bin", data[] = "data.bin";
+	char text[] = "progtest_text.bin", data[] = "progtest_data.bin";
 	int32_t r, address=0, dado, offset=0, limit_inf, limit_sup;
 	int contador = 0, i=0, opcao, arquivo;
 
@@ -28,6 +28,9 @@ int main(){
 	load_mem(data,init_data);
 	
 	run();
+	dump_mem(0,4096,'h');
+	dump_reg('h');
+	
 	 
 	return 0;
 }

@@ -47,6 +47,24 @@ int32_t lh(uint32_t address, int16_t kte){
 
 }
 
+int32_t lhu(uint32_t address, int16_t kte){
+	int32_t pos = (address + kte)/4;
+	int32_t res	= (address + kte)%4;
+	int32_t word_aux = mem[pos], word = mem[pos];
+
+
+	if(res==0){	
+		word_aux = word_aux & 0x0000ffff;
+		word = word & 0x0000ffff;
+	}
+
+	else{
+		word_aux = word_aux >> 16;
+		word = word >> 16;
+	}
+	return word;
+
+}
 
 //lb $t1,-100($t2)        Load byte : Set $t1 to sign-extended 8-bit value from effective memory byte address
 int32_t lb(uint32_t address, int16_t kte){
@@ -80,6 +98,38 @@ int32_t lb(uint32_t address, int16_t kte){
 			word = word & 0x000000ff;
 			word_aux = word >> 7;
 			if(word_aux == 1) word = word | 0xffffff00;
+		break;
+		default:
+			printf("Different from expected - Error loading byte");
+	}
+
+	return word;
+}
+
+int32_t lbu(uint32_t address, int16_t kte){
+	int32_t	pos = (address + kte)/4;
+	int32_t	res = (address + kte)%4;
+	int32_t	word = mem[pos], word_aux = mem[pos];
+
+	switch(res){
+		case 0:
+			word = word & 0x000000ff;
+			word_aux = word >> 7;
+			break;
+
+		case 1:
+			word = word >> 8;
+			word = word & 0x000000ff;			
+			break;
+
+		case 2:
+			word = word >> 16;
+			word = word & 0x000000ff;	
+			break;
+
+		case 3:
+			word = word >> 24;
+			word = word & 0x000000ff;		
 		break;
 		default:
 			printf("Different from expected - Error loading byte");
@@ -218,83 +268,63 @@ void execute(){
 	switch(opcode){
 		case EXT:
 			analyze_funct();
-			//advance_pc(4);
 		break;
 
 		case LW:
-			breg[rt] = mem[(breg[rs] + k16)/4];
-			//advance_pc(4);
+			breg[rt] = lw(breg[rs],k16);
 		break;
 
 		case LBU:
-			breg[rt] = mem[(breg[rs] + k16)/4];
-			//advance_pc(4);
+			breg[rt] = lbu(breg[rs],k16);
 		break;
 
 		case LB:
-			breg[rt] = mem[(breg[rs] + k16)/4];
-			//advance_pc(4);
+			breg[rt] = lb(breg[rs],k16);
 		break;
 
 		case LH:
-			breg[rt] = mem[(breg[rs] + k16)/4];
-			//advance_pc(4);
+			breg[rt] = lh(breg[rs],k16);
+
 		break;
 
 		case LHU:
-			breg[rt] = mem[(breg[rs] + k16)/4];
-			//advance_pc(4);
+			breg[rt] = lhu(breg[rs],k16);
 		break;
 
 		case LUI:
 			breg[rt] = (int32_t) (k16 << 16);
-			//advance_pc(4);
 		break;
 
 		case SW:
-			mem[(breg[rs] + k16)/4] = breg[rt];
-			//advance_pc(4);
+			sw(breg[rs],k16,breg[rt]);
 		break;
 
 		case SB:
-			mem[(breg[rs] + k16)/4] = breg[rt];
-			//advance_pc(4);
+			sb(breg[rs],k16,breg[rt]);
 		break;
 
 		case SH:
-			mem[(breg[rs] + k16)/4] = breg[rt];
-			//advance_pc(4);
+			sh(breg[rs],k16,breg[rt]);
 		break;
 
 		case BEQ:
-			if (breg[rs] == breg[rt])
-				pc += k16 << 2;
+			if (breg[rs] == breg[rt]) pc += k16 << 2;
 		break;
 
 		case BNE:
-			if (breg[rs] != breg[rt])
-				pc += k16 << 2;
-			else
-				//advance_pc(4);
+			if (breg[rs] != breg[rt]) pc += k16 << 2;
 		break;
 
 		case BLEZ:
-			if (breg[rs] <= 0)
-				pc += k26 << 2;
-			else
-				//advance_pc(4);
+			if (breg[rs] <= 0) pc += k16 << 2;
 		break;
 
 		case BGTZ:
-			if(breg[rs]>0)
-				pc += k26 << 2;
-			else
-				//advance_pc(4);
+			if(breg[rs]>0) pc += k16 << 2;
 		break;
 
 		case ADDI:
 			breg[rt] = breg[rs] + k16;
-			//advance_pc(4);
 		break;
 
 		case SLTI:
@@ -302,7 +332,7 @@ void execute(){
 				breg[rt] = 1;
 			else
 				breg[rt] = 0;
-			//advance_pc(4);
+
 		break;
 
 		case SLTIU:
@@ -310,22 +340,22 @@ void execute(){
 				breg[rt] = 1;
 			else
 				breg[rt] = 0;
-			//advance_pc(4);
+
 		break;
 
 		case ANDI:
 			breg[rt] = breg[rs] & k16;
-			//advance_pc(4);
+
 		break;
 
 		case ORI:
 			breg[rt] = breg[rs] | k16;
-			//advance_pc(4);
+
 		break;
 
 		case XORI:
 			breg[rt] = breg[rs] ^ k16;
-			//advance_pc(4);
+
 		break;
 
 		case ADDIU:
@@ -389,7 +419,6 @@ void analyze_funct(){
 
 		case JR:
 			pc = breg[rs];
-			
 		break;
 
 		case SLL:
@@ -426,12 +455,10 @@ void analyze_syscall(){
 		printf("%d", breg[4]);
 	
 	/* Ends program */
-	else if(breg[2] == 10)
-		exit(0);
+	else if(breg[2] == 10) exit(0);
 
 	/* Prints string */
 	else if(breg[2] == 4){
-		//printf("bobao");
 		str = lw(breg[4],0);                                           
         while(str != 0){                                              
           str = lb(breg[4],i);                                         
@@ -478,18 +505,16 @@ void dump_reg(char format){
 	int i;
 
 	if(format == 'h'){
-		for(i=0;i<32;i++)
-			printf("Registrador %d: %x",i,breg[i]);
-		printf("PC Register: %x", pc);
-		printf("Hi Register: %x", hi);
-		printf("Lo Register: %x", lo);
+		for(i=0;i<32;i++) printf("Register %d: %x\n",i,breg[i]);
+		printf("PC Register: %x\n", pc);
+		printf("Hi Register: %x\n", hi);
+		printf("Lo Register: %x\n", lo);
 	}
 	else{
-		for(i=0;i<32;i++)
-			printf("Registrador %d: %d",i,breg[i]);
-		printf("PC Register: %d", pc);
-		printf("Hi Register: %d", hi);
-		printf("Lo Register: %d", lo);
+		for(i=0;i<32;i++) printf("Registrador %d: %d\n",i,breg[i]);
+		printf("PC Register: %d\n", pc);
+		printf("Hi Register: %d\n", hi);
+		printf("Lo Register: %d\n", lo);
 	}
 }
 
